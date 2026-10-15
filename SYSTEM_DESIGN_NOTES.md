@@ -2,7 +2,6 @@
 
 > Goal: revise the fundamentals quickly, understand when to use each component, and explain how the pieces fit into a scalable architecture.
 >
-> Source inspiration: the YouTube crash course **“1000+ hours on System Design Explained | System Design Crash Course By Microsoft SDE” by Mayank Joshi**. These are paraphrased study notes with additional examples and practical caveats, not a verbatim transcript.
 
 ## Contents
 1. [A mental model for system design](#1-a-mental-model-for-system-design)
