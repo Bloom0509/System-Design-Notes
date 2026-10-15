@@ -1,6 +1,6 @@
 # System Design Notes
 
-A practical, revision-friendly system design notebook based on the **System Design Crash Course by Mayank Joshi** and expanded with examples, trade-offs, and interview reminders.
+A practical, revision-friendly system design notebook with explanations, examples, trade-offs, and interview reminders.
 
 ## How to use this repo
 - Start with [System Design Revision Notes](./SYSTEM_DESIGN_NOTES.md).
