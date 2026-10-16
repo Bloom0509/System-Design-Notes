@@ -55,6 +55,20 @@ Imagine building an app where customers browse restaurants, place orders, pay, a
 
 **Interview takeaway:** tie every component to a requirement or bottleneck instead of adding technology by default.
 
+### Diagram: Food-delivery system: requirements to components
+
+```mermaid
+flowchart TD
+    C[Customer app] --> API[Order API]
+    API --> R[Restaurant / menu service]
+    API --> DB[(Orders database)]
+    API --> PAY[Payment provider]
+    API --> Q[Order events queue]
+    Q --> D[Delivery assignment]
+    Q --> N[Notifications]
+    API --> M[Metrics and logs]
+```
+
 
 ## 2. DNS and HTTP/HTTPS
 
@@ -106,6 +120,22 @@ If DNS is misconfigured, the browser may not find the service. If TLS certificat
 
 **Interview takeaway:** DNS locates the destination; HTTPS protects the connection; HTTP defines the request and response.
 
+### Diagram: What happens when a user opens a website
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant D as DNS resolver
+    participant S as Website server
+    B->>D: Resolve shop.example.com
+    D-->>B: IP address
+    B->>S: Establish HTTPS connection (TLS)
+    B->>S: HTTP GET /products
+    S-->>B: HTTP 200 + response
+    B->>S: Fetch page assets
+    S-->>B: Images / CSS / JavaScript
+```
+
 
 ## 3. Vertical vs horizontal scaling
 
@@ -137,6 +167,20 @@ A ticketing website may receive a sudden traffic spike when sales open.
 - **Practical order:** optimize slow requests and queries first, scale the app tier, then address whichever shared dependency becomes the next bottleneck.
 
 **Watch out:** adding API servers will not fix a saturated database or a third-party payment provider.
+
+### Diagram: Scaling a ticketing application
+
+```mermaid
+flowchart TD
+    U[Ticket buyers] --> LB[Load balancer]
+    LB --> A1[App instance 1]
+    LB --> A2[App instance 2]
+    LB --> A3[App instance N]
+    A1 --> DB[(Shared database)]
+    A2 --> DB
+    A3 --> DB
+    DB -->|Bottleneck? monitor and scale separately| DB2[(Optimized / scaled data tier)]
+```
 
 
 ## 4. Load balancers: L4 vs L7
@@ -176,6 +220,18 @@ An online marketplace has product, checkout, and account APIs.
 
 **Trade-off:** L7 routing offers richer request-aware rules, while L4 forwarding can be simpler and lower overhead. Neither makes the downstream database highly available by itself.
 
+### Diagram: Network-level and HTTP-aware routing
+
+```mermaid
+flowchart TD
+    C[Client connection] --> L4[L4 load balancer]
+    L4 --> A[Healthy app instances]
+    C2[HTTP request] --> L7[L7 load balancer / gateway]
+    L7 -->|/products| P[Product service]
+    L7 -->|/checkout| O[Order service]
+    L7 -->|/accounts| U[Account service]
+```
+
 
 ## 5. CDN architecture
 
@@ -212,6 +268,19 @@ Students in different cities watch the same course videos and download thumbnail
 A CDN can reduce distance-related latency and origin bandwidth. However, a personalized page containing a student's private course progress must not be shared-cached under an unsafe cache key.
 
 **Interview takeaway:** use a CDN for eligible content near users; use application/data caching for different bottlenecks.
+
+### Diagram: Cacheable video and image delivery
+
+```mermaid
+flowchart LR
+    U[Viewer] --> E[Nearest CDN edge]
+    E -->|Cache hit| U
+    E -->|Cache miss| O[Origin / object storage]
+    O --> E
+    E -->|Cached response| U
+    A[Asset publisher] --> O
+    A -->|Purge / versioned URL| E
+```
 
 
 ## 6. Redis and caching strategies
@@ -275,6 +344,19 @@ Product descriptions may tolerate a short stale window; stock availability and c
 
 **Interview takeaway:** cache data that is read often and can safely tolerate the chosen freshness policy.
 
+### Diagram: Cache-aside product lookup
+
+```mermaid
+flowchart TD
+    C[Product request] --> R{Redis key exists?}
+    R -->|Hit| V[Return cached product]
+    R -->|Miss| D[(Database)]
+    D --> P[Populate cache with TTL]
+    P --> V
+    W[Product price update] --> D
+    W --> I[Invalidate or refresh cache key]
+```
+
 
 ## 7. Database indexing
 
@@ -314,6 +396,18 @@ An index such as `(customer_id, created_at DESC)` can help the database find one
 
 **Interview takeaway:** design the index around the query, then verify it with `EXPLAIN` rather than assuming it helps.
 
+### Diagram: Index-assisted order-history query
+
+```mermaid
+flowchart TD
+    API[GET customer order history] --> Q[Query by customer_id, newest first]
+    Q --> I[B-tree index: customer_id + created_at]
+    I --> R[Matching row locations]
+    R --> DB[(Read matching rows)]
+    DB --> OUT[Return paginated results]
+    NOTE[Verify with EXPLAIN / query plan] -.-> Q
+```
+
 
 ## 8. Replication
 
@@ -343,6 +437,18 @@ A service receives many more feed reads than profile edits.
 Replication can increase read capacity and provide failover options, but replica lag means replicas may temporarily return old data. Failover also requires safe promotion and recovery procedures.
 
 **Interview takeaway:** replication copies data; it does not automatically distribute writes or guarantee zero data loss.
+
+### Diagram: Primary database and read replicas
+
+```mermaid
+flowchart TD
+    W[Application writes] --> P[(Primary database)]
+    P -->|Replication stream| R1[(Read replica 1)]
+    P -->|Replication stream| R2[(Read replica 2)]
+    A[Read API: stale reads acceptable] --> R1
+    B[Analytics / read API] --> R2
+    C[Read-your-writes request] --> P
+```
 
 
 ## 9. Sharding
@@ -380,6 +486,20 @@ Choose the key based on access patterns, tenant size, cardinality, and isolation
 
 **Interview takeaway:** shard when a single database is a measured capacity bottleneck; plan rebalancing and cross-shard operations early.
 
+### Diagram: Tenant-based data partitioning
+
+```mermaid
+flowchart TD
+    API[Request with tenant_id] --> ROUTER[Shard router / tenant directory]
+    ROUTER --> S1[(Shard A)]
+    ROUTER --> S2[(Shard B)]
+    ROUTER --> S3[(Shard C)]
+    S1 --> M[Metrics: size, load, hot tenants]
+    S2 --> M
+    S3 --> M
+    M --> REBAL[Plan tenant move / rebalance]
+```
+
 
 ## 10. Consistent hashing
 
@@ -404,6 +524,18 @@ Consistent hashing maps keys and nodes onto a ring so that adding or removing a 
 The application still needs a strategy for cache misses, node failures, hot keys, and replication. Consistent hashing alone does not make cached data durable.
 
 **Interview takeaway:** consistent hashing reduces key movement during membership changes; it does not replace replication or failure handling.
+
+### Diagram: Mapping cache keys onto a node ring
+
+```mermaid
+flowchart LR
+    K[Cache key] --> H[Hash key to ring position]
+    H --> N[Choose next node clockwise]
+    N --> C1[(Cache node)]
+    C1 -->|Node added or removed| R[Only a portion of keys remap]
+    R --> M[Cache misses handled by fallback]
+    V[Virtual nodes improve distribution] -.-> H
+```
 
 
 ## 11. Message queues and event-driven architecture
@@ -458,6 +590,20 @@ Use an outbox or another reliable publishing strategy when a database commit and
 
 **Interview takeaway:** queues absorb bursts and decouple slow work, at the cost of eventual consistency and more operational machinery.
 
+### Diagram: Photo-upload job pipeline
+
+```mermaid
+flowchart TD
+    C[Client uploads photo] --> API[API validates and records metadata]
+    API --> DB[(Metadata database)]
+    API --> Q[Durable queue]
+    API --> ACK[Return photo ID]
+    Q --> W[Worker pool]
+    W --> T[Thumbnail / scan / moderation]
+    W -->|Transient failure| RETRY[Retry with backoff]
+    RETRY -->|Retry limit exceeded| DLQ[Dead-letter queue]
+```
+
 
 ## 12. Kafka vs RabbitMQ
 
@@ -486,6 +632,20 @@ Suppose an online store needs both to collect a stream of order events for analy
 These are typical fits, not hard rules. Compare ordering needs, throughput, replay, routing, delivery guarantees, operations, and existing team expertise before choosing.
 
 **Interview takeaway:** choose based on required behavior and failure semantics, not simply on which tool is more popular.
+
+### Diagram: Event stream and work queue use cases
+
+```mermaid
+flowchart TD
+    O[Order service] --> E[Order event]
+    E --> K[Kafka topic / partitions]
+    K --> A[Analytics consumer group]
+    K --> F[Fraud detection consumer group]
+    E --> Q[RabbitMQ work queue]
+    Q --> W1[Email worker 1]
+    Q --> W2[Email worker 2]
+    A --> STORE[(Analytics store)]
+```
 
 
 ## 13. Blob/object storage (S3)
@@ -529,6 +689,24 @@ Keep private buckets private, restrict URL scope and expiry, validate file size 
 
 **Interview takeaway:** object storage holds large binary objects; the database stores searchable business metadata and references.
 
+### Diagram: Direct, time-limited file upload
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant API as Application API
+    participant S as Object storage
+    participant DB as Metadata DB
+    participant W as Processing worker
+    C->>API: Request upload permission
+    API-->>C: Short-lived pre-signed URL
+    C->>S: Upload file bytes
+    S-->>C: Upload result
+    C->>API: Confirm upload / object key
+    API->>DB: Save ownership and metadata
+    API->>W: Enqueue validation and thumbnail job
+```
+
 
 ## 14. Rate limiting
 
@@ -567,6 +745,19 @@ A login endpoint receives repeated requests from a single IP or account, potenti
 A single IP limit can affect users behind the same NAT, while account-only limits can be abused against a victim's account. Combine signals carefully, monitor false positives, and avoid leaking whether an account exists.
 
 **Interview takeaway:** define the identity, time window, burst policy, and behavior when the limiter itself is unavailable.
+
+### Diagram: Protecting a login endpoint
+
+```mermaid
+flowchart TD
+    C[Login request] --> EDGE[Gateway / edge checks]
+    EDGE --> ID[Identify IP, account, tenant]
+    ID --> L{Within configured limit?}
+    L -->|Yes| API[Login service]
+    L -->|No| R[Return 429 + retry guidance]
+    API --> AUTH[Authenticate safely]
+    MET[Monitor limit hits and false positives] -.-> EDGE
+```
 
 
 ## 15. Polling vs WebSockets
@@ -607,6 +798,23 @@ For a low-frequency status page, polling may be sufficient. For live courier mov
 
 **Interview takeaway:** choose the simplest communication pattern that meets the required update latency and interaction model.
 
+### Diagram: Live food-delivery order tracking
+
+```mermaid
+flowchart TD
+    APP[Customer app] --> CH{Update strategy}
+    CH -->|Polling| P[GET status every interval]
+    P --> API[Order status API]
+    CH -->|WebSocket| WS[Persistent connection]
+    WS --> HUB[Realtime gateway]
+    DRIVER[Courier location event] --> BUS[Event bus]
+    BUS --> API
+    BUS --> HUB
+    API --> P
+    HUB --> WS
+    WS --> APP
+```
+
 
 ## 16. Idempotency
 
@@ -646,6 +854,26 @@ Use a durable uniqueness constraint and handle concurrent requests and in-progre
 
 **Interview takeaway:** idempotency makes retries safe at the business-operation level; it is not a blanket guarantee of exactly-once execution.
 
+### Diagram: Safe retry for a payment request
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant API as Payment API
+    participant DB as Idempotency store
+    participant PSP as Payment provider
+    C->>API: Pay with key K
+    API->>DB: Atomically claim K + request hash
+    API->>PSP: Charge once
+    PSP-->>API: Payment result
+    API->>DB: Persist result for K
+    API-->>C: Return result
+    C->>API: Retry with key K
+    API->>DB: Read stored result
+    DB-->>API: Existing result
+    API-->>C: Return same result
+```
+
 
 ## 17. CAP theorem
 
@@ -675,6 +903,20 @@ Imagine a retailer's inventory service has replicas in two regions and the regio
 The right behavior depends on the operation. Product descriptions can tolerate stale reads more easily than payment authorization or final-item reservation.
 
 **Interview takeaway:** CAP describes a trade-off during a partition, not a universal label that makes every operation in a system either “CP” or “AP.”
+
+### Diagram: Inventory behavior during a network partition
+
+```mermaid
+flowchart TD
+    A[Region A inventory replica] <-->|Normal replication| B[Region B inventory replica]
+    A -.->|Network partition| B
+    A --> PA{Reservation request}
+    B --> PB{Reservation request}
+    PA -->|Coordinate / reject if unsafe| CP[Consistency-first behavior]
+    PB -->|Accept locally if policy allows| AP[Availability-first behavior]
+    CP --> TRADE[Less risk of overselling; some requests wait or fail]
+    AP --> TRADE2[More writes accepted; reconciliation may be needed]
+```
 
 
 ## 18. End-to-end scalable architecture
@@ -762,6 +1004,25 @@ Start with the simplest viable design. Add read replicas, sharding, or additiona
 
 **Interview takeaway:** be able to trace one request and one piece of data through every component, including what happens when each dependency fails.
 
+### Diagram: Photo-sharing request and background processing
+
+```mermaid
+flowchart TD
+    C[Mobile / web client] --> CDN[CDN for approved media]
+    C --> GW[Gateway: TLS, auth, rate limits]
+    GW --> API[Stateless application API]
+    API --> DB[(Metadata database)]
+    API --> REDIS[(Redis cache)]
+    API --> URL[Issue pre-signed upload URL]
+    C --> OBJ[(Object storage)]
+    OBJ --> Q[Processing event / queue]
+    Q --> W[Workers: scan, resize, thumbnails]
+    W --> OBJ
+    W --> DB
+    OBS[Metrics, logs, traces, alerts] -.-> API
+    OBS -.-> W
+```
+
 
 ## 19. Trade-off cheat sheet
 
@@ -787,6 +1048,22 @@ Start with the simplest viable design. Add read replicas, sharding, or additiona
 - **Consistency vs availability:** a menu description can be briefly stale, but order payment and stock reservation need carefully defined correctness rules.
 
 **Interview takeaway:** explain the requirement that drives each choice and the cost introduced by that choice.
+
+### Diagram: Match the component to the need
+
+```mermaid
+flowchart TD
+    START[Identify bottleneck or requirement] --> STATIC{Static media?}
+    STATIC -->|Yes| CDN[CDN]
+    STATIC -->|No| HOT{Repeated hot data reads?}
+    HOT -->|Yes| CACHE[Application cache]
+    HOT -->|No| CAP{Database capacity limit?}
+    CAP -->|Read load| REPL[Read replicas]
+    CAP -->|Data / write scale| SHARD[Evaluate sharding]
+    CAP -->|No| ASYNC{Slow non-critical work?}
+    ASYNC -->|Yes| QUEUE[Queue + workers]
+    ASYNC -->|No| SIMPLE[Keep the simpler design]
+```
 
 
 ## 20. Interview revision checklist
@@ -828,6 +1105,23 @@ Before drawing boxes, clarify:
 Then draw the simplest end-to-end flow, identify its first bottleneck, and introduce one component at a time. For every addition, explain the benefit, failure mode, and trade-off.
 
 **Interview answer structure:** requirements → rough scale → API/data model → architecture → bottleneck → failure handling → trade-offs → observability.
+
+### Diagram: Ride-booking system: high-level request flow
+
+```mermaid
+flowchart TD
+    R[Rider requests trip] --> API[Booking API]
+    API --> MATCH[Driver matching service]
+    MATCH --> LOC[(Driver location store)]
+    MATCH --> DB[(Trip database)]
+    DB --> EVT[Trip status events]
+    EVT --> WS[Realtime updates]
+    WS --> RAPP[Rider app]
+    WS --> DAPP[Driver app]
+    API --> PAY[Payment service]
+    API --> OBS[Metrics, logs, alerts]
+    FAIL[Discuss retries, timeouts, duplicate requests, regional failure] -.-> API
+```
 
 
 ## 21. Visual diagrams
