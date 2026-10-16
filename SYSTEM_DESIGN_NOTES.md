@@ -560,3 +560,100 @@ Before you finish a design, make sure you can answer:
 **Requirement → bottleneck → design choice → request/data flow → failure handling → trade-offs → metrics.**
 
 If you can explain not only *what* a component is but *which problem made you add it*, you have the right mental model for system design interviews.
+
+---
+
+## 21. Visual diagrams
+
+GitHub renders the Mermaid diagrams below directly in this Markdown file. Use them to revise the request flow, caching behavior, and asynchronous processing without leaving the notes.
+
+### 21.1 Typical web request flow
+
+```mermaid
+flowchart TD
+    U[Client / Browser] --> DNS[DNS lookup]
+    DNS --> EDGE[CDN / Edge protection]
+    EDGE --> LB[Load balancer / API gateway]
+    LB --> API[Stateless API instances]
+    API --> CACHE[(Redis cache)]
+    API --> DB[(Primary database)]
+    DB --> REPLICA[(Read replicas)]
+    API --> OBJ[(Object storage)]
+    API --> OUTBOX[Transactional outbox]
+    OUTBOX --> Q[Message broker]
+    Q --> W[Worker pool]
+    W --> DB
+    W --> OBJ
+```
+
+**How to read it:** DNS helps locate the service; the edge serves eligible cached content; the load balancer routes requests; APIs coordinate business logic; databases store structured data; object storage holds large files; workers handle asynchronous tasks.
+
+### 21.2 Cache-aside read path
+
+```mermaid
+flowchart TD
+    A[Client request] --> B[Application checks cache]
+    B -->|Cache hit| C[Return cached value]
+    B -->|Cache miss| D[Query database]
+    D --> E[Store result with TTL]
+    E --> F[Return result]
+```
+
+**Remember:** define TTL and invalidation behavior, and protect the database from a thundering herd when popular keys expire together.
+
+### 21.3 Asynchronous job processing
+
+```mermaid
+flowchart LR
+    C[Client] --> API[API validates request]
+    API --> DB[(Persist job / metadata)]
+    API --> Q[Durable queue]
+    API --> R[Return 202 + job ID]
+    Q --> W[Worker]
+    W --> S{Processing succeeds?}
+    S -->|Yes| DONE[Save result / mark complete]
+    S -->|No| RETRY[Retry with backoff]
+    RETRY -->|Retry limit reached| DLQ[Dead-letter queue]
+```
+
+**Design notes:** return a job/status ID for long-running work, make workers idempotent, set retry limits, and alert on queue depth and oldest-message age. Use an outbox or another reliable publishing pattern when a database write and event publication must stay coordinated.
+
+## 22. Further reading and trusted references
+
+These links provide official documentation or widely used learning resources. Use them to validate details and explore implementation-specific behavior.
+
+### Networking and web fundamentals
+- [Cloudflare Learning Center: What is DNS?](https://www.cloudflare.com/learning/dns/what-is-dns/)
+- [MDN: An overview of HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview)
+- [MDN: Transport Layer Security (TLS)](https://developer.mozilla.org/en-US/docs/Web/Security/Transport_Layer_Security)
+
+### Scaling, load balancing, and content delivery
+- [AWS: Elastic Load Balancing documentation](https://docs.aws.amazon.com/elasticloadbalancing/)
+- [Cloudflare: What is a CDN?](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)
+- [Google Cloud: Autoscaling groups](https://cloud.google.com/compute/docs/autoscaler)
+
+### Caching and databases
+- [Redis documentation](https://redis.io/docs/latest/)
+- [PostgreSQL: Indexes](https://www.postgresql.org/docs/current/indexes.html)
+- [PostgreSQL: Streaming replication](https://www.postgresql.org/docs/current/warm-standby.html)
+- [AWS: Database sharding guidance](https://docs.aws.amazon.com/whitepapers/latest/database-caching-strategies-using-redis/database-sharding.html)
+
+### Messaging and object storage
+- [Apache Kafka documentation](https://kafka.apache.org/documentation/)
+- [RabbitMQ tutorials and documentation](https://www.rabbitmq.com/tutorials)
+- [Amazon S3: Pre-signed URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html)
+- [AWS Prescriptive Guidance: Transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+
+### Reliability, APIs, and distributed systems
+- [Google Cloud: Rate limiting overview](https://cloud.google.com/architecture/rate-limiting-strategies-techniques)
+- [MDN: WebSockets API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+- [Martin Kleppmann: Designing Data-Intensive Applications (book)](https://dataintensive.net/)
+- [Google SRE Book: Monitoring distributed systems](https://sre.google/sre-book/monitoring-distributed-systems/)
+
+### Interview practice
+- [System Design Primer](https://github.com/donnemartin/system-design-primer)
+- [ByteByteGo: System design resources](https://bytebytego.com/)
+- [High Scalability: Real-world architecture articles](https://highscalability.com/)
+
+**Study tip:** start with the relevant section in these notes, sketch the diagram from memory, then read one reference and explain the component's purpose, failure modes, and trade-offs in your own words.
+
