@@ -2,6 +2,10 @@
 
 A practical, revision-friendly system design notebook with explanations, examples, trade-offs, and interview reminders.
 
+## What is system design?
+System design is the process of defining the architecture, components, modules and data flow of a software system so that it can handle users needs effectively, especially when it needs to scale.
+
+
 ## How to use this repo
 - Start with [System Design Revision Notes](./SYSTEM_DESIGN_NOTES.md).
 - Focus on the problem each component solves—not just definitions.
