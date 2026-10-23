@@ -8,3 +8,10 @@
   - 2 Tier -> The simplest form where clients and servers communicate directly.
   - 3 Tier -> A middleware layer, often called the application layer, is added between the client and server.
   - N Tier -> Involves multiple intermediary layers, such as security and business logic, to manage complex data processing and ensure security.
+## Monolithic vs Microservice Architecture
+- A monolith means the entire application is built as one single unit- everything(login,payments,dashboard,admin panel) is written together and deployed together.
+- Microservices break the system into small separate parts where each part (or service) is responsible for just one job like handling users ,payments or notifications
+- You have many small services each doing specific tasks
+- Each service can be developed ,tested and deployed on its own
+- These services talk to each other using APIs( like REST,gRPC)
+- Each service can even use its own database
