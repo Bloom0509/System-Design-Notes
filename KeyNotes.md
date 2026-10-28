@@ -15,3 +15,11 @@
 - Each service can be developed ,tested and deployed on its own
 - These services talk to each other using APIs( like REST,gRPC)
 - Each service can even use its own database
+## Synchronous vs Asynchronous Communication
+ In system design, when two services or components communicate ,the way they exchange messages can be:
+  - synchronous : The sender sends the request and wait for response before doing anything else
+  - Asynchronous  The sender sends the request and immediately  moves on without waiting for any response.
+  - This affects the speed, scalability , complexity and reliability of your system.
+ Synchronous communication happens in real time, client sends a request (usually HTTP).
+ The server processes it and sends a response . The client is blocked until the server replies
+ If the server crashes or its too slow, the client also waits or fails.      
