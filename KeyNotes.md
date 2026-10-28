@@ -20,6 +20,7 @@
   - synchronous : The sender sends the request and wait for response before doing anything else
   - Asynchronous  The sender sends the request and immediately  moves on without waiting for any response.
   - This affects the speed, scalability , complexity and reliability of your system.
- Synchronous communication happens in real time, client sends a request (usually HTTP).
+ Synchronous communication happens in real time, client sends a request (usually HTTP) and HTTPs on real world.
  The server processes it and sends a response . The client is blocked until the server replies
- If the server crashes or its too slow, the client also waits or fails.      
+ If the server crashes or its too slow, the client also waits or fails.
+  - Asynchronous communication happens indirectly or in the background , sender puts a message into queue or sends a event, when ack or completed. The worker or listener picks it up later and processes it.
