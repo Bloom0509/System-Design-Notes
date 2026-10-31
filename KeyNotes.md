@@ -62,3 +62,36 @@
    - A routing technique where a load balancer consistently directs all subsequent requests from a specific user to the same backend server for the duration of their session.
    - shopping cart,dashboard
    - Great user experience
+  ## Caching
+   - Caching is the process of storing frequently accessed data in a faster storage layer so future requests can be served faster, instead of recalculating or  fetching the data again from a slower source (like a database or API).
+   ## Types of caching
+  - Client-side Caching: Browser caching stores webpage resources on a local computer when a user visits a webpage. On the next visit, the browser loads the page from local resources, reducing server load and improving page load speed.
+  - CDN Caching: Content Delivery Networks (like Cloudflare, Akamai) cache static files near users to reduce latency.
+  - Application-level Caching: Backend servers use in-memory caches (e.g., Redis, Memcached) to store frequently used data like: popular products,leaderboard
+  - Database caching: Cache results of frequent queries so they aren't recomputed.
+   ## Cache Hit
+   - The requested data is found inside the cache
+   ## Cache Miss
+   - The requested data is not found in the cache
+   ## Cache Algorithm
+  ## LRU (Least Recently Used
+  - Evicts the item that has not been accessed for the longest time.
+  - Action: Evicts the item that hasn't been touched for the longest time.
+  - Before: [A, B, C] (A was used longest ago)
+  - Evicted: A
+  - After: [B, C, D]
+
+  ## FIFO (First-In, First-Out)
+  - Evicts the oldest item that was loaded into the cache first, regardless of how often or recently it was used.
+  - Action: Evicts the item that entered the cache first, regardless of how often it was used.
+  - Before: [A, B, C] (A entered the cache first)
+  - Evicted: A
+  - After: [B, C, D]
+  - Note: Even if A was accessed a million times right before D arrived, FIFO still kicks it out because it is the oldest arrival.
+    
+  ## LFU (Least Frequently Used)
+  - Tracks how many times an item has been accessed and evicts the one with the lowest total count.
+  - Action: Evicts the item with the lowest access count.
+  - Before: [A (5 hits), B (12 hits), C (2 hits)]
+  - Evicted: C (It only has 2 hits)
+  - After: [A (5 hits), B (12 hits), D (1 hit)]
