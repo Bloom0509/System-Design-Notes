@@ -95,3 +95,18 @@
   - Before: [A (5 hits), B (12 hits), C (2 hits)]
   - Evicted: C (It only has 2 hits)
   - After: [A (5 hits), B (12 hits), D (1 hit)]
+
+  ## CDN (Content Delivery Network)  
+  - A content Delivery Network (CDN) is a network of servers located around the world that cache and deliver static content(like images,CSS,javascript,videos) from the server closest to the user
+  - imagine ordering a product online 
+  - Without CDN-> All orders are shipped from one warehouse in one city -slow and overload
+  - with CDN-> There are warehouses across the country , so you get your item from the nearest one, fast and efficiently.
+  ## CDN working -> CDN relies on 3 types of servers
+  - Origin servers: origin servers contain the original versions of content, and they function as the source of truth. Whenever content needs to be updated, changes are made on the origin server.
+  - Edge servers: edge servers are located in multiple geographical locations around the world, also called points of presence (pops). The edge servers within these pops cache content that is copied from origin servers, and they are responsible for delivering that content to nearby users.
+  - DNS servers: when a client sends a request to an origin server, DNS servers respond with the name of a paired edge server from which the content can be served faster
+  ## what content is cached?
+   - mostly static assets
+   - HTML,CSS, javascript
+   - Images, videos, PDF
+   - Fonts and icons
