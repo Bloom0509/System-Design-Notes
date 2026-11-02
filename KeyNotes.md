@@ -110,3 +110,36 @@
    - HTML,CSS, javascript
    - Images, videos, PDF
    - Fonts and icons
+
+ ## SQL vs NoSQL
+ - A database is critical in any Application, So when building a system need to know what kind of Database we should use.
+ - The choice between NoSQL vs. SQL databases impacts the efficiency of data retrieval, storage, and processing.
+   ## SQL
+    - SQL (Structured Query Language) databases are relational
+    - Data is stored in tables with predefined schemas.
+    - A relationship between the two tables (or more) can be created using a foreign key.
+    - They have a fixed schema, and all data ingested into the database must be precisely aligned to predefined formatting standards.
+    - Use SQL queries to fetch or update data.
+    - Ex: PostgreSQL, MySQL, Microsoft SQL Server, Oracle
+    ## NoSQL
+    - NoSQL (Not Only SQL) databases are non-relational.
+    - Data can be stored in key-value, document, graph, or column formats — often schema-less
+    - Designed for horizontal scaling
+    - Supports different models
+    - Key-Value (Redis, DynamoDB)
+    - Document (MongoDB, CouchDB)
+    - Wide-Column (Cassandra, HBase)
+    - Graph (Neo4j, ArangoDB)
+    ## when to use what?
+    - ACID compilance -SQL
+    - schema flexible- NoSQL
+    - complex query- SQL
+    - low read latency -NoSQL
+    - data has complex relationship- SQL
+    - high speed caching session data- NoSQL
+    - Transaction related query- SQL (consistency)
+    ## ACID
+    - A-atomiticity-> success or failure, no partial transaction
+    - C-consistency-> database should be in a valid state
+    - I-isolation-> transaction don't interfere with each other, no dirty read/write
+    - D-duration-> once committed changes are permanent even though it crash. transction are never loss
