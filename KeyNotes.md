@@ -143,3 +143,22 @@
     - C-consistency-> database should be in a valid state
     - I-isolation-> transaction don't interfere with each other, no dirty read/write
     - D-duration-> once committed changes are permanent even though it crash. transction are never loss
+  ## Horizontal vs Vertical Scaling
+   - Scaling is the process of increasing your system's capacity to handle more traffic, more users, or more data.
+   - There are two main types of scaling strategies: Vertical Scaling and Horizontal Scaling
+  ## Vertical Scaling (Scaling Up)
+   - You make a single server more powerful by adding more: CPU, RAM, DISK ,Network Bandwidth
+   - InShort: You keep the same machine, just upgrade its hardware. No architecture changes — just bigger box.
+  ## Pros
+   - Simple as no need to change architecture
+   - Easy to manage
+   - Fast read/write as everything is one machine
+  ## Cons
+   - There's a limit as we can't upgrade one server infinitely
+   - Bigger configuration are costly
+   - Single point failure
+  ## Horizontal Scaling (Scaling Out)
+   - You add more machines (nodes) to handle the increased load. Each machine handles a portion of the traffic or data.
+   - Imagine you're running an app server:
+   - So, instead of upgrading your existing server, you add 3 more servers behind a load balancer.
+   - Each request is now distributed across all servers.   
