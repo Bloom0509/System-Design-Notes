@@ -172,3 +172,32 @@
    - Application Architecture Changes: Apps often need to be stateless or redesigned so that user sessions and data do not depend on a single local server memory.
    - Higher Initial Overhead: Setting up orchestration (such as Kubernetes), sharding, and replication can make the early stages more expensive and time-consuming to build.
   ## Database sharding   
+   - Sharding is a database architecture pattern where large databases are split into smaller, faster, more manageable parts called shards.
+   - Each shard is an independent database instance that holds a subset of the total data.
+     ## why sharding?
+      - Huge table Size and slow Queries
+      - Can't scale vertically
+      - High read/write load on one DB
+      - Single point of failure
+     ## How sharding works?
+      - Chosing a shard key
+      - Applying the sharding algorithms
+     ## how shard key is chosen?
+      - The key must have a large number of unique values (e.g., user_id, order_uuid, or email).
+      - Low-cardinality fields (like status: [active, inactive] or country if 90% of users are in one country) fail to distribute data evenly.    
+     ## Types of sharding algorithms
+       ## Hash-Based Sharding
+        - Apply a hash function to the sharding key
+        - Modulo by number of shards -> to pick target shard
+        - shard_id = hash(user_id) % 4 # Suppose 4 shards
+        - Cons: Hard to add/remove shards (hash changes = full rebalancing)
+       ## Range Based Sharding
+        - Split data by key ranges
+        - Example:
+           - Users with ID 1–100K -> shard1
+           - Users with ID 100K-200K -> shard2
+        - Cons: some ranges grow faster
+        ## Directory Based Sharing
+        - In directory-based sharding you maintain a lookup table (directory) that maps each sharding key value to a specific shard.
+        - Cons: The lookup directory becomes a single point of failure and a potential performance bottleneck, requiring aggressive caching , 1 extra lookup and directory must be sync with data migration.       
+          
