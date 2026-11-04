@@ -171,3 +171,4 @@
    - Data Consistency Challenges: Keeping data synchronized across multiple database replicas or shards is difficult and can introduce latency or conflict issues.
    - Application Architecture Changes: Apps often need to be stateless or redesigned so that user sessions and data do not depend on a single local server memory.
    - Higher Initial Overhead: Setting up orchestration (such as Kubernetes), sharding, and replication can make the early stages more expensive and time-consuming to build.
+  ## Database sharding   
