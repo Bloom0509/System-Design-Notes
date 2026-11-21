@@ -39,5 +39,17 @@
            - ":" means an integer
            - "$" means a bulk string with a declared byte length
            - "*" means an array. every redis command is just an array of bulk strings
-           - "\r\n" in the end of line marker b/w parts of message  
+           - "\r\n" in the end of line marker b/w parts of message
+         ## Event Loop
+         - redis is single threaded for command execution. But how can a single redis process handle tens of thousands of client connections?
+         - Imagine 100,00 clients connected : client1, client2, client3 .... client 100,00
+         - Naive thinking would love to use threads , 1 thread/client
+         - But that's disastrous considering redis usage
+         - why? every thread requires:
+            - thread stack
+            - cpu scheduling
+            - context switching
+            - synchronization
+         - suppose each thread consumes 1mb stack
+         - then 1,00,000 , 1mb=100gb ram just for thread stack     
           
