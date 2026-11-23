@@ -51,5 +51,17 @@
             - context switching
             - synchronization
          - suppose each thread consumes 1mb stack
-         - then 1,00,000 , 1mb=100gb ram just for thread stack     
+         - then 1,00,000 , 1mb=100gb ram just for thread stack
+         ## how redis manages even though being single threaded?
+         - Instead of continuously checking thousands of socket itself, redis simply calls:
+         - epoll_wait()
+         - and goes to sleep, when data arrives on any client connection, the kernel wakes redis and returns the list of ready sockets
+         - Epoll is a linux service/api . Redis tells the kernel that you are watching the sockets. Tell me only when something interesting happens
+         - Example:
+         - Client A-> no data
+         - Client B-> no data
+         - Client C-> GET user:123
+         - epoll_wait() returns socket C is ready
+         - Redis only processes that socket
+         - The event loop is higher-level reactor pattern implementation that uses epoll to detect ready sockets and then processes commands
           
