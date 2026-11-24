@@ -80,4 +80,14 @@
                         int refcount,      // -> memory management
                         void *ptr      // -> pointer to actual value
                     } robj;  
-        - Every single value, whether a string, a list, or a sorted set, is wrapped in this struct   
+        - Every single value, whether a string, a list, or a sorted set, is wrapped in this struct
+        - Once your hash grows beyond the threshold, Redis converts it to a proper hash table with $O(1)$ lookups
+        - A sorted set works the same way:
+          - Small sorted set-> listpack encoding (O(N) rank queries, but tiny memory)
+          - Large sorted set, a skiplist plus an internal hash table for O(1) score lookups by member (-> skip list + hashtable)  
+          - listpack -> hash table upgrade threshold
+        - The defaults are:
+           - hash-max-listpack-entries 128 — up to 128 fields; Redis uses listpack. At field 129, it upgrades to a full hash table.
+           - hash-max-listpack-value 64 — if any single field name or value exceeds 64 bytes in length, Redis upgrades immediately regardless of field count. So a hash with 5 fields where one value is a 200-character string will upgrade to a hash table even though it only has 5 fields. Both conditions can independently trigger the upgrade.
+        - The threshold for encoding upgrades is configurable: hash-max-listpack-entries, zset-max-listpack-entries, etc.
+        - Once upgraded to the full encoding, Redis never downgrades — there's no shrink path.            
