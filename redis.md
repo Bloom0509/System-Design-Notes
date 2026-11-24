@@ -64,4 +64,20 @@
          - epoll_wait() returns socket C is ready
          - Redis only processes that socket
          - The event loop is higher-level reactor pattern implementation that uses epoll to detect ready sockets and then processes commands
-          
+         ## In Memory Storage Engine
+         - Most people thinks redis store data like: unordered_map<string, string>
+         - It doesn't. Redis storage engine is optimised for two things:
+         - fast lookup
+         - low memory usage
+         - redis doesn't use one internal representation per data type
+         - It uses multiple encodings and switches between them automatically based on the size and content of your data
+         - This is invisible to you as a client, but it's responsible for Redis using 5-10x less memory than a naive implementation.
+         -      // Simplified Redis object structure
+                    struct redisObject {
+                        unsigned type,      // -> data type 
+                        unsigned encoding,  // -> how redis is going to store raw, unsigned
+                        unsigned lru,       // -> LFU, LRU
+                        int refcount,      // -> memory management
+                        void *ptr      // -> pointer to actual value
+                    } robj;  
+        - Every single value, whether a string, a list, or a sorted set, is wrapped in this struct   
