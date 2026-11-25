@@ -90,4 +90,25 @@
            - hash-max-listpack-entries 128 — up to 128 fields; Redis uses listpack. At field 129, it upgrades to a full hash table.
            - hash-max-listpack-value 64 — if any single field name or value exceeds 64 bytes in length, Redis upgrades immediately regardless of field count. So a hash with 5 fields where one value is a 200-character string will upgrade to a hash table even though it only has 5 fields. Both conditions can independently trigger the upgrade.
         - The threshold for encoding upgrades is configurable: hash-max-listpack-entries, zset-max-listpack-entries, etc.
-        - Once upgraded to the full encoding, Redis never downgrades — there's no shrink path.            
+        - Once upgraded to the full encoding, Redis never downgrades — there's no shrink path.
+
+        ## RDB vs AOF vs no persistence
+         - Redis lives in RAM.
+         - RAM is volatile — power goes out, process crashes, or OS kills it, and everything is gone.
+         - Persistence is Redis's answer to: "How much of that can I recover?"
+         - The answer depends entirely on which mode you pick, and each mode is a different point on the durability-vs-performance curve.
+           ## RDB — point-in-time snapshots
+           - When RDB fires, Redis calls fork(). This creates a child process that is an exact copy of the parent's memory space. The child walks every key in the keyspace and serializes it to a binary file called dump.rdb. The parent keeps serving requests as if nothing happened.
+           - The reason this works without blocking the parent is copy-on-write (COW).
+           - When the parent modifies a memory page after the fork, the OS makes a private copy of that page for the parent. The child still sees the original. So the child is essentially frozen in time at the moment of the fork — it gets a consistent snapshot without any locking.
+           - The catch is the fork itself. If the parent is writing heavily during the snapshot, COW copies pile up, and memory usage can spike significantly — sometimes by 2x.
+           - The other catch: you can only recover up to the last snapshot. If you snapshot every 5 minutes and the server crashes 4 minutes in, you lose 4 minutes of writes.
+           - Hence, this is not effective when the workload is write-intensive.
+           ## AOF = Append-Only File
+            - Instead of saving point-in-time snapshots like RDB, Redis logs every write operation it executes.
+            - These commands are appended to a file (appendonly.aof) in the same format as Redis protocol commands. On restart, Redis replays the file top to bottom and reconstructs the full dataset.
+            - The key config is the fsync policy (Write Policies) — this is where the actual durability tradeoff lives:
+              - fsync always: after every write command, Redis calls fsync(), which forces the OS to flush the file to disk. Zero data loss. But fsync is a syscall that blocks until the disk confirms the write, so throughput drops sharply.
+              - fsync everysec: fsync once per second (default; balances durability and performance). Max 1 sec data loss.
+              - fsync no: let the OS decide when to flush (fastest, but risk of losing seconds of data).
+            - Redis 7 introduced a mixed RDB+AOF format. The AOF file starts with an RDB snapshot (fast to load), then appends only the delta commands since that snapshot.        
